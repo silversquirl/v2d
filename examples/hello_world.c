@@ -9,6 +9,9 @@
  * Some things which are not demonstrated include: custom event handling,
  * custom game loops, camera transformations, collision detection, etc.
  *
+ * Other examples in this folder use "example_boilerplate.h" to remove
+ * the repetition of setting up SDL properly. This one does not, so that
+ * you can see a full working example.
  */
 #include <SDL2/SDL.h>
 #include <v2d.h>

@@ -27,6 +27,12 @@ typedef struct {
 	v2d_vec_t pos, dir;
 } v2d_ray_t;
 
+// Point-to-shape collision
+// These functions return true if the point is within the shape and false otherwise
+// They are useful for mouse-picking of shapes
+_Bool v2d_collide_point_circle(v2d_vec_t p, v2d_circle_t c);
+_Bool v2d_collide_point_rect(v2d_vec_t p, v2d_rect_t b);
+
 // Shape-to-shape collision
 // These functions return true if there is a collision and false otherwise
 
