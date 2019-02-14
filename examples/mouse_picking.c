@@ -27,24 +27,21 @@ static void rect_render(v2d_ent_t *ent, v2d_render_t *ren) {
 	v2d_render_draw_rect(ren, r->rect.pos, r->rect.dim);
 }
 
-#if 0
 struct circle {
 	v2d_ent_cb_t cb;
 	v2d_action_t *mouse;
-	v2d_vec_t pos;
-	double rad;
+	v2d_circle_t circ;
 };
 
 static void circle_render(v2d_ent_t *ent, v2d_render_t *ren) {
 	struct circle *c = ent;
 
 	double l = 0.7;
-	if (c->mouse->value.s) l = 1;
+	if (v2d_collide_point_circle(c->mouse->value.pos, c->circ)) l = 1;
 
 	v2d_render_rgb(ren, l, l, l);
-	v2d_render_draw_circle(ren, c->pos, r->rad);
+	v2d_render_draw_circle(ren, c->circ.pos, c->circ.rad);
 }
-#endif
 
 int ex_main(SDL_Window *win) {
 	v2d_action_dispatcher_t dis = v2d_adis_create(actions, NULL, NULL, &actions[0]);
@@ -53,16 +50,30 @@ int ex_main(SDL_Window *win) {
 	struct rect rect_a = {
 		{rect_render, NULL, NULL},
 		&actions[0],
-		{v2d_vec(2, -1), v2d_vec(1, 1)},
+		{v2d_vec(2, -1), v2d_vec(2, 1)},
 	};
 	v2d_world_add_entity(world, &rect_a);
 
 	struct rect rect_b = {
 		{rect_render, NULL, NULL},
 		&actions[0],
-		{v2d_vec(-1, 1), v2d_vec(1, 1)},
+		{v2d_vec(-1, 1), v2d_vec(2, 3)},
 	};
 	v2d_world_add_entity(world, &rect_b);
+
+	struct circle circle_a = {
+		{circle_render, NULL, NULL},
+		&actions[0],
+		{v2d_vec(-1, 1), 1},
+	};
+	v2d_world_add_entity(world, &circle_a);
+
+	struct circle circle_b = {
+		{circle_render, NULL, NULL},
+		&actions[0],
+		{v2d_vec(1, -1), 0.4},
+	};
+	v2d_world_add_entity(world, &circle_b);
 
 	v2d_render_t *render = v2d_render_new(win);
 	if (!render) {

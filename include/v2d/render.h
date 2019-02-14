@@ -59,4 +59,7 @@ void v2d_render_draw_rect(v2d_render_t *render, v2d_vec_t pos, v2d_vec_t size);
 // Draw a single pixel
 void v2d_render_draw_pixel(v2d_render_t *render, v2d_vec_t pos);
 
+// Draw a circle using the midpoint circle algorithm
+void v2d_render_draw_circle(v2d_render_t *render, v2d_vec_t center, double radius);
+
 #endif

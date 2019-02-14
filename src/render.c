@@ -81,3 +81,39 @@ void v2d_render_draw_pixel(v2d_render_t *render, v2d_vec_t pos) {
 	pos = _tr(render, pos);
 	SDL_RenderDrawPoint(render->sdl_ren, v2dvx(pos), v2dvy(pos));
 }
+
+// Midpoint circle algorithm stolen from https://en.wikipedia.org/wiki/Midpoint_circle_algorithm#C_example
+void v2d_render_draw_circle(v2d_render_t *render, v2d_vec_t center, double radius) {
+	v2d_vec_t pos = _tr(render, center);
+	double rad = creal(_tr_siz(render, radius));
+
+	int x0 = v2dvx(pos);
+	int y0 = v2dvy(pos);
+	int x = rad - 1;
+	int y = 0;
+	int dx = 1;
+	int dy = 1;
+	int diam = rad*2;
+	int err = dx - diam;
+
+	while (x >= y) {
+		SDL_RenderDrawPoint(render->sdl_ren, x0 + x, y0 + y);
+		SDL_RenderDrawPoint(render->sdl_ren, x0 + y, y0 + x);
+		SDL_RenderDrawPoint(render->sdl_ren, x0 - y, y0 + x);
+		SDL_RenderDrawPoint(render->sdl_ren, x0 - x, y0 + y);
+		SDL_RenderDrawPoint(render->sdl_ren, x0 - x, y0 - y);
+		SDL_RenderDrawPoint(render->sdl_ren, x0 - y, y0 - x);
+		SDL_RenderDrawPoint(render->sdl_ren, x0 + y, y0 - x);
+		SDL_RenderDrawPoint(render->sdl_ren, x0 + x, y0 - y);
+
+		if (err <= 0) {
+			y++;
+			err += dy;
+			dy += 2;
+		} else {
+			x--;
+			dx += 2;
+			err += dx - diam;
+		}
+	}
+}
