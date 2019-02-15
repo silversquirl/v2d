@@ -1,6 +1,7 @@
 .PHONY: all clean
 
-EXAMPLES = hello_world mouse_picking
+EX_SRC = $(wildcard *.c)
+EXAMPLES = $(patsubst %.c,%,$(EX_SRC))
 
 CC := gcc -std=c99 -pedantic
 CFLAGS := -Wall -Werror -I../include -O2
@@ -15,5 +16,9 @@ all: $(EXAMPLES)
 clean:
 	rm -f $(EXAMPLES)
 
-%: %.c
+%: %.c ../libv2d.a
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
+
+../libv2d.a:
+	$(MAKE) -C ..

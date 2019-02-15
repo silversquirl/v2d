@@ -39,6 +39,9 @@ typedef double _Complex v2d_vec_t;
 // Return the Y component of a vector
 #define v2dvy(v) (cimag(v))
 
+// Return the x and y components of a vector, separated by a comma
+#define v2d_vec_xy(v) v2dvx(v), v2dvy(v)
+
 // Convert a vector to a pointer to two doubles
 #define v2d_vec_a(v) ((double *)(&(v))) // This is well-defined by C99 - see section 6.2.5, point 13
 

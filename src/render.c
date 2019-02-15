@@ -71,15 +71,21 @@ void v2d_render_draw_rect(v2d_render_t *render, v2d_vec_t pos, v2d_vec_t size) {
 	v2d_vec_t screen_pos = _tr(render, pos);
 	v2d_vec_t screen_size = _tr_siz(render, size);
 	SDL_Rect r = {
-		v2dvx(screen_pos), v2dvy(screen_pos),
-		v2dvx(screen_size), v2dvy(screen_size),
+		v2d_vec_xy(screen_pos),
+		v2d_vec_xy(screen_size),
 	};
 	SDL_RenderDrawRect(render->sdl_ren, &r);
 }
 
 void v2d_render_draw_pixel(v2d_render_t *render, v2d_vec_t pos) {
 	pos = _tr(render, pos);
-	SDL_RenderDrawPoint(render->sdl_ren, v2dvx(pos), v2dvy(pos));
+	SDL_RenderDrawPoint(render->sdl_ren, v2d_vec_xy(pos));
+}
+
+void v2d_render_draw_line(v2d_render_t *render, v2d_vec_t pos, v2d_vec_t dir) {
+	pos = _tr(render, pos);
+	dir = _tr_siz(render, dir);
+	SDL_RenderDrawLine(render->sdl_ren, v2d_vec_xy(pos), v2d_vec_xy(pos + dir));
 }
 
 // Midpoint circle algorithm stolen from https://en.wikipedia.org/wiki/Midpoint_circle_algorithm#C_example

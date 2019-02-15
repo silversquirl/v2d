@@ -33,11 +33,6 @@ static v2d_rect_t _rect_fix(v2d_rect_t r) {
 	return r;
 }
 
-// Return the scalar projection of a vector onto another vector
-static inline double _vec_proj(v2d_vec_t from, v2d_vec_t onto) {
-	return v2d_vec_dot(from, onto) / v2d_vec_mag(onto);
-}
-
 bool v2d_collide_point_circle(v2d_vec_t p, v2d_circle_t c) {
 	return v2d_vec_mag2(c.pos - p) < c.rad*c.rad;
 }
@@ -89,17 +84,28 @@ bool v2d_collide_circle_rect(v2d_circle_t a, v2d_rect_t b) {
 }
 
 double v2d_raycast_circle(v2d_ray_t r, v2d_circle_t c) {
+	// Shortcut
+	if (v2d_collide_point_circle(r.pos, c)) return 0;
+	if (r.dir == 0) return INFINITY;
+	if (v2d_collide_point_circle(r.pos + r.dir, c)) return 0;
+
 	// Translate the ray's position to origin
 	v2d_vec_t cpos = c.pos - r.pos;
 
-	// Project the center point of the circle onto the ray
-	double proj = _vec_proj(cpos, r.dir);
+	// Compute this once, we'll need it a few times
+	double rmag = v2d_vec_mag(r.dir);
+	double rimag = 1/rmag;
 
-	// If the projection is outside the bounds of the ray, there's no collision
-	if (proj < 0 || proj > 1) return INFINITY;
+	// Project the center point of the circle onto the ray
+	// This is an actual distance, not a λ value
+	double proj = v2d_vec_dot(cpos, r.dir) * rimag;
+
+	// Make sure we don't go outside of the ray
+	if (proj < 0) proj = 0;
+	else if (proj > rmag) proj = rmag;
 
 	// Otherwise, check the distance from the projected point to the circle's center
-	double distance = v2d_vec_mag2(cpos - r.dir*proj);
+	double distance = v2d_vec_mag2(cpos - r.dir*proj*rimag);
 	// If it's more than the circle's radius, there's no collision
 	if (distance >= c.rad*c.rad) return INFINITY;
 
@@ -108,12 +114,20 @@ double v2d_raycast_circle(v2d_ray_t r, v2d_circle_t c) {
 	// The distance from the center to the collision point is `c.rad`
 	// The distance from the center to the projected point is `sqrt(distance)`
 	// Thus, the distance from the projected point to the collision point is `sqrt(c.rad*c.rad - distance)`
-	// If this value is subtracted from `proj`, it produces the value for λ that we need to return
-	return proj - sqrt(c.rad*c.rad - distance);
+	// If this value is subtracted from `proj`, it produces the distance of the collision point from r.pos
+	// We then need to divide by v2d_vec_mag(r.dir) to get the value for λ that we need to return
+	double h = (proj - sqrt(c.rad*c.rad - distance)) * rimag;
+	if (0 <= h && h <= 1) return h;
+	return INFINITY;
 }
 
 double v2d_raycast_rect(v2d_ray_t r, v2d_rect_t b) {
 	// This uses the "slab" method of ray-AABB intersection
+
+	// Shortcut
+	if (v2d_collide_point_rect(r.pos, b)) return 0;
+	if (r.dir == 0) return INFINITY;
+	if (v2d_collide_point_rect(r.pos + r.dir, b)) return 0;
 
 	// The two corners of the rect
 	b = _rect_fix(b);
@@ -140,5 +154,7 @@ double v2d_raycast_rect(v2d_ray_t r, v2d_rect_t b) {
 	hmin = fmax(hmin, fmin(hy1, hy2));
 
 	if (hmax < hmin) return INFINITY;
-	return hmin;
+	double h = hmin < 0 ? hmax : hmin;
+	if (0 <= h && h <= 1) return h;
+	return INFINITY;
 }

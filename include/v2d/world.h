@@ -33,4 +33,11 @@ void v2d_world_add_entity(v2d_world_t *world, v2d_ent_t *entity);
 // Returns true on success, false if the object was not found in the world
 _Bool v2d_world_del_entity(v2d_world_t *world, v2d_ent_t *entity);
 
+// Used in a for loop to loop through all the entities in a world
+// Usage:
+//  for (struct my_entity_type *v2d_world_iterate(ent, world)) {
+//      do_thing_with_entity(ent);
+//  }
+#define v2d_world_iterate(var, world) (var), *_v2d_world_iterate_list = (void *)((world)->entities); _v2d_world_iterate_list && ((var) = (void *)(((struct v2d_world_entity_list *)_v2d_world_iterate_list)->ent)); _v2d_world_iterate_list = (void *)(((struct v2d_world_entity_list *)_v2d_world_iterate_list)->next)
+
 #endif
