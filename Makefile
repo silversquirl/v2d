@@ -1,14 +1,15 @@
 .PHONY: all clean
 
+CC ?= gcc
+AR ?= ar
+S2C ?= sdl2-config
+
 BUILD_DIR ?= build
 SRC_DIR ?= src
 HEADER_DIR ?= include
 
-CC := gcc -std=c99 -pedantic
-CFLAGS := -Wall -Werror -I$(HEADER_DIR)/ -O2
+CFLAGS := -std=c99 -pedantic -Wall -Werror -I$(HEADER_DIR)/ -O2 $(shell $(S2C) --cflags)
 LDFLAGS :=
-
-AR := ar
 
 HEADERS := $(HEADER_DIR)/v2d.h $(wildcard $(HEADER_DIR)/v2d/*.h)
 SOURCES := $(wildcard $(SRC_DIR)/*.c)

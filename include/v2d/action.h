@@ -9,7 +9,7 @@
 #define _V2D_ACTION_H
 
 #include <stdint.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "v2d.h"
 #include "v2d/vector.h"
 #include "v2d/transform.h"

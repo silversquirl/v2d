@@ -10,7 +10,7 @@
 #ifndef _V2D_RENDER_H
 #define _V2D_RENDER_H
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "v2d.h"
 #include "v2d/world.h"
 #include "v2d/transform.h"
@@ -64,5 +64,8 @@ void v2d_render_draw_line(v2d_render_t *render, v2d_vec_t pos, v2d_vec_t dir);
 
 // Draw a circle using the midpoint circle algorithm
 void v2d_render_draw_circle(v2d_render_t *render, v2d_vec_t center, double radius);
+
+// Draw a portion of an SDL texture
+void v2d_render_draw_texture(v2d_render_t *render, SDL_Texture *tex, SDL_Rect *srcrect, v2d_vec_t dstpos, v2d_vec_t dstsize);
 
 #endif

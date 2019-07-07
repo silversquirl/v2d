@@ -1,6 +1,6 @@
 #include <complex.h>
 #include <stdbool.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "v2d/render.h"
 
 // Transform v2d world coordinates to SDL screen coordinates
@@ -122,4 +122,22 @@ void v2d_render_draw_circle(v2d_render_t *render, v2d_vec_t center, double radiu
 			err += dx - diam;
 		}
 	}
+}
+
+void v2d_render_draw_texture(v2d_render_t *render, SDL_Texture *tex, SDL_Rect *srcrect, v2d_vec_t dstpos, v2d_vec_t dstsize) {
+	SDL_Rect dstrect = {
+		v2d_vec_xy(_tr(render, dstpos)),
+		v2d_vec_xy(_tr_siz(render, dstsize)),
+	};
+
+	if (dstrect.w < 0) {
+		dstrect.x += dstrect.w;
+		dstrect.w = -dstrect.w;
+	}
+	if (dstrect.h < 0) {
+		dstrect.y += dstrect.h;
+		dstrect.h = -dstrect.h;
+	}
+
+	SDL_RenderCopy(render->sdl_ren, tex, srcrect, &dstrect);
 }
