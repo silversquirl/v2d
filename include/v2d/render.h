@@ -32,6 +32,13 @@ v2d_render_t *v2d_render_new(SDL_Window *sdl_win);
 // Free a renderer and all resources associated with it
 void v2d_render_free(v2d_render_t *render);
 
+// Transform v2d world coordinates to SDL screen coordinates
+// Does the same as v2d_render_screen_pos, except it doesn't translate
+v2d_vec_t v2d_render_screen_pos(v2d_render_t *render, v2d_vec_t v);
+
+// Transform a v2d world size to an SDL screen size
+v2d_vec_t v2d_render_screen_size(v2d_render_t *render, v2d_vec_t v);
+
 // Set a renderer's transformation to center the origin on screen
 void v2d_render_transform_center(v2d_render_t *render, double width, double height);
 
@@ -67,5 +74,8 @@ void v2d_render_draw_circle(v2d_render_t *render, v2d_vec_t center, double radiu
 
 // Draw a portion of an SDL texture
 void v2d_render_draw_texture(v2d_render_t *render, SDL_Texture *tex, SDL_Rect *srcrect, v2d_vec_t dstpos, v2d_vec_t dstsize);
+
+// Adjust an SDL rect so its width and height are positive
+void v2d_render_util_fix_rect(SDL_Rect *rect);
 
 #endif

@@ -3,17 +3,6 @@
 #include <SDL.h>
 #include "v2d/render.h"
 
-// Transform v2d world coordinates to SDL screen coordinates
-// We use complex conjugate because SDL has y coordinates increasing downwards, whereas v2d has them increasing upwards
-static inline v2d_vec_t _tr(v2d_render_t *render, v2d_vec_t v) {
-	return v2d_transform(conj(v), v2d_render_transform(render));
-}
-
-// Transform a v2d world size to an SDL screen size
-static inline v2d_vec_t _tr_siz(v2d_render_t *r, v2d_vec_t v) {
-	return r->screen_tr.mul * conj(r->camera_tr.mul * v);
-}
-
 v2d_render_t *v2d_render_new(SDL_Window *sdl_win) {
 	SDL_Renderer *ren = SDL_CreateRenderer(sdl_win, -1, 0);
 	if (!ren) {
@@ -39,6 +28,15 @@ void v2d_render_free(v2d_render_t *render) {
 	if (!render) return;
 	SDL_DestroyRenderer(render->sdl_ren);
 	free(render);
+}
+
+v2d_vec_t v2d_render_screen_pos(v2d_render_t *render, v2d_vec_t v) {
+	// We use complex conjugate because SDL has y coordinates increasing downwards, whereas v2d has them increasing upwards
+	return v2d_transform(conj(v), v2d_render_transform(render));
+}
+
+v2d_vec_t v2d_render_screen_size(v2d_render_t *render, v2d_vec_t v) {
+	return conj(v) * v2d_render_transform(render).mul;
 }
 
 void v2d_render_transform_center(v2d_render_t *render, double width, double height) {
@@ -68,8 +66,8 @@ void v2d_render_flip(v2d_render_t *render) {
 }
 
 void v2d_render_draw_rect(v2d_render_t *render, v2d_vec_t pos, v2d_vec_t size) {
-	v2d_vec_t screen_pos = _tr(render, pos);
-	v2d_vec_t screen_size = _tr_siz(render, size);
+	v2d_vec_t screen_pos = v2d_render_screen_pos(render, pos);
+	v2d_vec_t screen_size = v2d_render_screen_size(render, size);
 	SDL_Rect r = {
 		v2d_vec_xy(screen_pos),
 		v2d_vec_xy(screen_size),
@@ -78,20 +76,20 @@ void v2d_render_draw_rect(v2d_render_t *render, v2d_vec_t pos, v2d_vec_t size) {
 }
 
 void v2d_render_draw_pixel(v2d_render_t *render, v2d_vec_t pos) {
-	pos = _tr(render, pos);
+	pos = v2d_render_screen_pos(render, pos);
 	SDL_RenderDrawPoint(render->sdl_ren, v2d_vec_xy(pos));
 }
 
 void v2d_render_draw_line(v2d_render_t *render, v2d_vec_t pos, v2d_vec_t dir) {
-	pos = _tr(render, pos);
-	dir = _tr_siz(render, dir);
+	pos = v2d_render_screen_pos(render, pos);
+	dir = v2d_render_screen_size(render, dir);
 	SDL_RenderDrawLine(render->sdl_ren, v2d_vec_xy(pos), v2d_vec_xy(pos + dir));
 }
 
 // Midpoint circle algorithm stolen from https://en.wikipedia.org/wiki/Midpoint_circle_algorithm#C_example
 void v2d_render_draw_circle(v2d_render_t *render, v2d_vec_t center, double radius) {
-	v2d_vec_t pos = _tr(render, center);
-	double rad = creal(_tr_siz(render, radius));
+	v2d_vec_t pos = v2d_render_screen_pos(render, center);
+	double rad = creal(v2d_render_screen_size(render, radius));
 
 	int x0 = v2dvx(pos);
 	int y0 = v2dvy(pos);
@@ -126,18 +124,21 @@ void v2d_render_draw_circle(v2d_render_t *render, v2d_vec_t center, double radiu
 
 void v2d_render_draw_texture(v2d_render_t *render, SDL_Texture *tex, SDL_Rect *srcrect, v2d_vec_t dstpos, v2d_vec_t dstsize) {
 	SDL_Rect dstrect = {
-		v2d_vec_xy(_tr(render, dstpos)),
-		v2d_vec_xy(_tr_siz(render, dstsize)),
+		v2d_vec_xy(v2d_render_screen_pos(render, dstpos)),
+		v2d_vec_xy(v2d_render_screen_size(render, dstsize)),
 	};
-
-	if (dstrect.w < 0) {
-		dstrect.x += dstrect.w;
-		dstrect.w = -dstrect.w;
-	}
-	if (dstrect.h < 0) {
-		dstrect.y += dstrect.h;
-		dstrect.h = -dstrect.h;
-	}
+	v2d_render_util_fix_rect(&dstrect);
 
 	SDL_RenderCopy(render->sdl_ren, tex, srcrect, &dstrect);
+}
+
+void v2d_render_util_fix_rect(SDL_Rect *rect) {
+	if (rect->w < 0) {
+		rect->x += rect->w;
+		rect->w = -rect->w;
+	}
+	if (rect->h < 0) {
+		rect->y += rect->h;
+		rect->h = -rect->h;
+	}
 }
